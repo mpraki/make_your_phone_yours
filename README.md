@@ -4,6 +4,6 @@
 
 Turn off mobile data when the usage exceeds configured limit
 
-![img.png](img.png)
+![app_screenshot.jpeg](app_screenshot.jpeg)
 
 ## TODO:
