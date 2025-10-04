@@ -8,14 +8,16 @@ import android.app.Service
 import android.app.usage.NetworkStatsManager
 import android.content.Context
 import android.content.Intent
-import android.net.ConnectivityManager
-import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import android.telephony.TelephonyManager
 import androidx.core.app.NotificationCompat
 import android.provider.Settings
+
+import android.media.MediaPlayer
+import android.media.RingtoneManager
+import android.net.Uri
+import android.net.NetworkCapabilities
 
 class DataUsageService : Service() {
 
@@ -47,7 +49,7 @@ class DataUsageService : Service() {
         runnable = object : Runnable {
             override fun run() {
                 checkDataUsage()
-                handler.postDelayed(this, timePeriod)
+                handler.postDelayed(this, 15 * 60 * 1000) // 15 minutes once check the data usage
             }
         }
         handler.post(runnable)
@@ -60,7 +62,7 @@ class DataUsageService : Service() {
 
         try {
             val networkStats = networkStatsManager.querySummaryForDevice(
-                ConnectivityManager.TYPE_MOBILE, 
+                NetworkCapabilities.TRANSPORT_CELLULAR, 
                 null, 
                 System.currentTimeMillis() - timePeriod, 
                 System.currentTimeMillis()
@@ -74,40 +76,30 @@ class DataUsageService : Service() {
             sendBroadcast(intent)
 
             if (totalBytes > dataLimit) {
-                toggleMobileData(false)
+                val mediaPlayer = MediaPlayer.create(applicationContext, R.raw.data_usage_warning)
+                mediaPlayer.setOnCompletionListener { mp -> mp.release() }
+                mediaPlayer.start()
+                openMobileDataSettingScreen()
             }
         } catch (e: SecurityException) {
             e.printStackTrace()
         }
     }
 
-    private fun toggleMobileData(enable: Boolean) {
-        try {
-            val telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-            val setMobileDataEnabledMethod = telephonyManager.javaClass.getDeclaredMethod(
-                "setDataEnabled",
-                Boolean::class.javaPrimitiveType
-            )
-            setMobileDataEnabledMethod.isAccessible = true
-            setMobileDataEnabledMethod.invoke(telephonyManager, enable)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            val intent = Intent(Settings.ACTION_DATA_ROAMING_SETTINGS)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(intent)
-        }
+    private fun openMobileDataSettingScreen() {
+        val intent = Intent(Settings.ACTION_DATA_USAGE_SETTINGS)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
     }
 
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val serviceChannel = NotificationChannel(
-                "DataUsageServiceChannel",
-                "Data Usage Service Channel",
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            val manager = getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(serviceChannel)
-        }
+        val serviceChannel = NotificationChannel(
+            "DataUsageServiceChannel",
+            "Data Usage Service Channel",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(serviceChannel)
     }
 
     override fun onBind(intent: Intent): IBinder? {

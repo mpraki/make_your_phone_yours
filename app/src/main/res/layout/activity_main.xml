@@ -18,13 +18,41 @@
         android:textColor="@color/white"
         android:textSize="20sp" />
 
-    <EditText
-        android:id="@+id/data_limit_gb"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Data Limit (GB)"
-        android:inputType="numberDecimal"
-        android:textColor="@color/white" />
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/data_limit_gb"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Data Limit"
+            android:inputType="numberDecimal"
+            android:textColor="@color/white" />
+
+        <RadioGroup
+            android:id="@+id/unit_radio_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/gb_radio_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="GB"
+                android:textColor="@color/white" />
+
+            <RadioButton
+                android:id="@+id/mb_radio_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MB"
+                android:textColor="@color/white" />
+        </RadioGroup>
+    </LinearLayout>
 
     <EditText
         android:id="@+id/time_period_hours"
