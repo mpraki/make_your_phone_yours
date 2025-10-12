@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity() {
         mbRadioButton = findViewById(R.id.mb_radio_button)
 
         val sharedPref = getSharedPreferences("DataUsagePrefs", Context.MODE_PRIVATE)
-        val savedDataLimit = sharedPref.getString("dataLimit", "")
+        val savedDataLimit = sharedPref.getString("dataLimitString", "")
         val savedTimePeriod = sharedPref.getString("timePeriodHours", "")
         val savedUnit = sharedPref.getString("unit", "GB")
 
@@ -88,7 +88,8 @@ class MainActivity : AppCompatActivity() {
             }
             val timePeriod = savedTimePeriod.toLong() * 60 * 60 * 1000
 
-            startDataUsageService(dataLimit, timePeriod)
+            val intent = Intent(this, NetworkChangeReceiver::class.java)
+            sendBroadcast(intent)
         }
 
         if (!hasUsageStatsPermission()) {
@@ -111,7 +112,9 @@ class MainActivity : AppCompatActivity() {
 
             val sharedPref = getSharedPreferences("DataUsagePrefs", Context.MODE_PRIVATE)
             with(sharedPref.edit()) {
-                putString("dataLimit", dataLimitString)
+                putLong("dataLimit", dataLimit)
+                putLong("timePeriod", timePeriod)
+                putString("dataLimitString", dataLimitString)
                 putString("timePeriodHours", timePeriodString)
                 putString("unit", selectedUnit)
                 apply()
@@ -120,7 +123,8 @@ class MainActivity : AppCompatActivity() {
             configuredValuesTextView.text =
                 "Configured: $dataLimitString $selectedUnit limit for $timePeriodString hours"
 
-            startDataUsageService(dataLimit, timePeriod)
+            val intent = Intent(this, NetworkChangeReceiver::class.java)
+            sendBroadcast(intent)
         }
     }
 
@@ -143,13 +147,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun startDataUsageService(dataLimit: Long, timePeriod: Long) {
-        val intent = Intent(this, DataUsageService::class.java).apply {
-            putExtra("dataLimit", dataLimit)
-            putExtra("timePeriod", timePeriod)
-        }
-        startService(intent)
-    }
+    
 
     override fun onResume() {
         super.onResume()
