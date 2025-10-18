@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="20dp"
-        android:layout_marginBottom="15dp"
+        android:layout_marginBottom="40dp"
         android:text="Data Usage Monitor"
         android:textColor="@color/white"
         android:textSize="20sp" />
